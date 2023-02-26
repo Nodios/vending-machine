@@ -1,4 +1,5 @@
 import { httpClient } from '../http/httpClient';
+import { IRegisterResponse } from '../models/auth/IRegisterResponse';
 import { IUserListResponse } from '../models/users/IUserListResponse';
 
 type UsersFindRequest = {
@@ -9,6 +10,13 @@ type UsersFindRequest = {
 type UserRoleRequest = {
     userId: string;
     role: string;
+};
+
+type RegisterRequest = {
+    email: string;
+    username: string;
+    password: string;
+    confirmPassword: string;
 };
 
 class UsersService {
@@ -32,6 +40,15 @@ class UsersService {
         });
 
         return response;
+    }
+
+    async register(data: RegisterRequest): Promise<IRegisterResponse> {
+        const response = await httpClient.post<IRegisterResponse>(
+            'users',
+            data,
+        );
+
+        return response.data;
     }
 }
 

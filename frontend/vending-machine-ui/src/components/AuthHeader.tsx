@@ -11,7 +11,12 @@ export const AuthHeader = () => {
     return (
         <div>
             {data == null ? (
-                <Link to="/login">Login</Link>
+                <div>
+                    <Link to="/login" className="mr-3">
+                        Login
+                    </Link>
+                    <Link to="/register">Register</Link>
+                </div>
             ) : (
                 <UserHeader userData={data} />
             )}
