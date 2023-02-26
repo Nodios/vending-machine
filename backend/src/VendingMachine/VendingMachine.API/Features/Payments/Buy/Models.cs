@@ -21,8 +21,9 @@ namespace Payments.Buy
     {
         #region Properties
 
+        public decimal AvailableFunds { get; set; }
         public IEnumerable<int> Change { get; set; }
-        public int Spent { get; set; }
+        public decimal Spent { get; set; }
 
         #endregion Properties
     }

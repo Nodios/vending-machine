@@ -1,0 +1,12 @@
+.nav {
+    position: fixed;
+    top: 0;
+    width: 100%;
+    overflow: hidden;
+
+    @apply bg-white;
+}
+
+.main {
+    padding-top: 61px;
+}

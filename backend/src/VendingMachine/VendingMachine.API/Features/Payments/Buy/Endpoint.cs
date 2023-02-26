@@ -1,6 +1,7 @@
 ﻿using FastEndpoints;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using VendingMachine.API.Infrastructure;
 using VendingMachine.DataAccess;
 using VendingMachine.Domain.Configuration;
 
@@ -10,6 +11,7 @@ namespace Payments.Buy
     {
         #region Fields
 
+        private readonly CoinChanger _coinChanger;
         private readonly VendingMachineDbContext _dbContext;
         private readonly UserManager<VendingMachine.Domain.Identity.User> _userManager;
 
@@ -17,9 +19,10 @@ namespace Payments.Buy
 
         #region Constructors
 
-        public Endpoint(UserManager<VendingMachine.Domain.Identity.User> userManager, VendingMachineDbContext dbContext)
+        public Endpoint(UserManager<VendingMachine.Domain.Identity.User> userManager, VendingMachineDbContext dbContext, CoinChanger coinChanger)
         {
             _dbContext = dbContext;
+            _coinChanger = coinChanger;
             _userManager = userManager;
         }
 
@@ -74,16 +77,33 @@ namespace Payments.Buy
 
             using (var transaction = _dbContext.Database.BeginTransaction())
             {
-                product.AmountAvailable--;
-                await _dbContext.SaveChangesAsync();
+                try
+                {
+                    product.AmountAvailable -= r.Quantity;
+                    await _dbContext.SaveChangesAsync();
 
-                user.Deposit -= totalCost;
-                await _userManager.UpdateAsync(user);
+                    var denominations = Config.GetSection("Settings:AcceptedCoins").Get<int[]>() ?? Array.Empty<int>();
+                    // TODO: change to decimal
+                    var coinChangeResult = _coinChanger.GetChange(denominations, (int)(user.Deposit - totalCost));
+                    user.Deposit = coinChangeResult.Left;
 
-                await transaction.CommitAsync();
+                    await _userManager.UpdateAsync(user);
+
+                    await transaction.CommitAsync();
+
+                    Response.Change = coinChangeResult.Change;
+                    Response.Spent = totalCost;
+                    Response.AvailableFunds = user.Deposit;
+                }
+                catch (Exception ex)
+                {
+                    Logger.LogError(ex, ex.Message);
+
+                    AddError("Something went wrong while purchasing.");
+                    await SendErrorsAsync();
+                    return;
+                }
             }
-
-            // TODO: calculate change
 
             await SendAsync(Response);
         }

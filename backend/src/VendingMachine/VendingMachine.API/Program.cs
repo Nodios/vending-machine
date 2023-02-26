@@ -47,6 +47,9 @@ builder.Services.Configure<IdentityOptions>(options =>
 
 builder.Services.AddJWTBearerAuth(builder.Configuration.GetValue<string>("Auth:Secret"));
 
+// Project services
+builder.Services.AddSingleton<CoinChanger>();
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
@@ -54,7 +57,7 @@ app.UseDefaultExceptionHandler();
 
 app.UseCors();
 
-app.UseHttpsRedirection();
+//app.UseHttpsRedirection();
 
 app.UseAuthentication();
 app.UseAuthorization();
