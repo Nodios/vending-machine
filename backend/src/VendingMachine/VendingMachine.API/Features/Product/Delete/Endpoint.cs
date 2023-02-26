@@ -36,8 +36,9 @@ namespace Product.Delete
 
             if (product == null)
             {
-                Logger.LogWarning($"User {r.SellerId} tried and failed to delete product {r.Id}.");
-                await SendOkAsync();
+                Logger.LogError($"User {r.SellerId} tried and failed to delete product {r.Id}.");
+                AddError("Product can't be deleted.");
+                await SendErrorsAsync();
                 return;
             }
 

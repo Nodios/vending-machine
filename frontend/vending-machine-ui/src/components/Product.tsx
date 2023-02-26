@@ -1,12 +1,14 @@
 import { useSnackbar } from 'notistack';
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { useMutation, useQueryClient } from 'react-query';
 import { Link } from 'react-router-dom';
 import { getErrorMessages } from '../data/getErrorMessages';
 import { IProduct } from '../data/models/products/IProduct';
 import { paymentsService } from '../data/services/paymentsService';
+import { productsService } from '../data/services/productsService';
 import { useAuth } from '../hooks/useAuth';
 import { useFunds } from '../hooks/useFunds';
+import { Button } from './Button';
 
 type Props = {
     product: IProduct;
@@ -14,6 +16,26 @@ type Props = {
 
 export const Product: React.FC<Props> = (props) => {
     const { data } = useAuth();
+    const { enqueueSnackbar } = useSnackbar();
+    const queryClient = useQueryClient();
+
+    const deleteMutation = useMutation({
+        mutationFn: (product: IProduct) => productsService.delete(product.id),
+        onSuccess: (_, vars) => {
+            queryClient.invalidateQueries(['products']);
+            enqueueSnackbar(`Product ${vars.name} deleted.`, {
+                variant: 'success',
+            });
+        },
+        onError: (error: any) => {
+            const messages = getErrorMessages(error);
+            if (messages != null && messages.length > 0) {
+                enqueueSnackbar(messages[0], {
+                    variant: 'error',
+                });
+            }
+        },
+    });
 
     return (
         <div className="py-6">
@@ -30,9 +52,20 @@ export const Product: React.FC<Props> = (props) => {
                             {props.product.name}
                         </h1>
                         {data?.id === props.product.sellerId && (
-                            <Link to={`/product/${props.product.id}`}>
-                                Edit
-                            </Link>
+                            <div className="flex flex-col">
+                                <Link to={`/products/${props.product.id}`}>
+                                    Edit
+                                </Link>
+                                <Button
+                                    type="button"
+                                    className="text-white bg-red-500"
+                                    onClick={() =>
+                                        deleteMutation.mutate(props.product)
+                                    }
+                                >
+                                    x
+                                </Button>
+                            </div>
                         )}
                     </div>
                     <p className="mt-2 text-gray-600 text-sm">

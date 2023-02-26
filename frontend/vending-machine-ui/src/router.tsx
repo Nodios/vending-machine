@@ -6,6 +6,7 @@ import { AdminHomePage } from './pages/admin/AdminHomePage';
 import { DepositPage } from './pages/DepositPage';
 import { HomePage } from './pages/HomePage';
 import { LoginPage } from './pages/LoginPage';
+import { ProductEditPage } from './pages/products/ProductEditPage';
 import { RegisterPage } from './pages/RegisterPage';
 
 export const router = createBrowserRouter([
@@ -32,6 +33,14 @@ export const router = createBrowserRouter([
                         element: <DepositPage />,
                     },
                 ],
+            },
+            {
+                path: '/products/create',
+                element: <ProductEditPage isAdd />,
+            },
+            {
+                path: '/products/:id',
+                element: <ProductEditPage />,
             },
             {
                 path: '/admin',
