@@ -22,6 +22,7 @@ export const ProductsList = () => {
                                 <Button
                                     type="button"
                                     onClick={() => fetchNextPage()}
+                                    className="text-white"
                                 >
                                     Load more...
                                 </Button>

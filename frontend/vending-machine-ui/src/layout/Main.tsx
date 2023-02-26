@@ -1,9 +1,11 @@
 import { Link, Outlet } from 'react-router-dom';
 import { AuthHeader } from '../components/AuthHeader';
+import { useAuth } from '../hooks/useAuth';
 
 import styles from './Main.module.css';
 
 export const Main = () => {
+    const auth = useAuth();
     return (
         <div>
             <div className={styles.nav}>

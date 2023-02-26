@@ -1,11 +1,15 @@
 ﻿using FastEndpoints;
 using FluentValidation;
+using System.Security.Claims;
 
 namespace User.UpdateUserRole
 {
     public class Request
     {
         #region Properties
+
+        [FromClaim(ClaimType = ClaimTypes.NameIdentifier, IsRequired = true)]
+        public string RequestUserId { get; set; }
 
         public string Role { get; set; }
         public string UserId { get; set; }

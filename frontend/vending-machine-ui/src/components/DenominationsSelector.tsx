@@ -39,7 +39,11 @@ export const DenominationsSelector: React.FC<Props> = (props) => {
                 <div className="p-4 text-xl">Total: {state.total}</div>
             </div>
             <div className="col-span-3">
-                <Button type="button" onClick={() => onApply()}>
+                <Button
+                    type="button"
+                    onClick={() => onApply()}
+                    className="text-white"
+                >
                     Apply
                 </Button>
             </div>

@@ -1,10 +1,14 @@
-import { useCallback, useEffect } from 'react';
-import { useMutation, useQuery, useQueryClient } from 'react-query';
+import { useSnackbar } from 'notistack';
+import { useCallback } from 'react';
+import { useMutation, useQuery } from 'react-query';
 import { DenominationsSelector } from '../components/DenominationsSelector';
+import { getErrorMessages } from '../data/getErrorMessages';
 import { paymentsService } from '../data/services/paymentsService';
+import { useFunds } from '../hooks/useFunds';
 
 export const DepositPage = () => {
-    const queryclient = useQueryClient();
+    const { enqueueSnackbar } = useSnackbar();
+    const { updateFunds } = useFunds();
     const { data, isLoading } = useQuery(
         ['denominations'],
         paymentsService.getDenominations,
@@ -14,6 +18,20 @@ export const DepositPage = () => {
     );
     const depositMutation = useMutation({
         mutationFn: paymentsService.deposit,
+        onSuccess: (data) => {
+            updateFunds(data.availableFunds);
+            enqueueSnackbar(`Added ${data.amountAdded} to your account.`, {
+                variant: 'success',
+            });
+        },
+        onError: (error: any) => {
+            const messages = getErrorMessages(error);
+            if (messages != null && messages.length > 0) {
+                enqueueSnackbar(messages[0], {
+                    variant: 'error',
+                });
+            }
+        },
     });
 
     const depositFunds = useCallback(
@@ -24,17 +42,6 @@ export const DepositPage = () => {
         },
         [depositMutation],
     );
-
-    useEffect(() => {
-        if (depositMutation.isSuccess) {
-            queryclient.setQueryData(
-                'funds',
-                depositMutation.data.availableFunds,
-            );
-        } else if (depositMutation.isError) {
-            // TODO: show error notification
-        }
-    }, [depositMutation, queryclient]);
 
     if (isLoading) {
         return <div>Loading...</div>;

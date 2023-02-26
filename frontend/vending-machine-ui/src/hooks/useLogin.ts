@@ -18,27 +18,23 @@ export function useLogin() {
         password: string,
         rememberMe: boolean = false,
     ) {
-        try {
-            const result = await mutation.mutateAsync({
-                username,
-                password,
-                rememberMe,
-            });
+        const result = await mutation.mutateAsync({
+            username,
+            password,
+            rememberMe,
+        });
 
-            // save to local storage
-            localStorageProvider.set<IToken>('token', {
-                token: result.token,
-                expires: result.expiresAt,
-            });
-            localStorageProvider.set<ILoginResponse>('user', result);
-            queryClient.setQueryData(['login'], result);
+        // save to local storage
+        localStorageProvider.set<IToken>('token', {
+            token: result.token,
+            expires: result.expiresAt,
+        });
+        localStorageProvider.set<ILoginResponse>('user', result);
+        queryClient.setQueryData(['login'], result);
 
-            updateFunds(result.availableFunds);
+        updateFunds(result.availableFunds);
 
-            return result;
-        } catch (ex) {
-            throw createErrorResponse(ex);
-        }
+        return result;
     }
 
     async function logout() {

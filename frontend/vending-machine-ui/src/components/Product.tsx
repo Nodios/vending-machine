@@ -1,9 +1,12 @@
+import { useSnackbar } from 'notistack';
 import { useEffect, useState } from 'react';
 import { useMutation, useQueryClient } from 'react-query';
 import { Link } from 'react-router-dom';
+import { getErrorMessages } from '../data/getErrorMessages';
 import { IProduct } from '../data/models/products/IProduct';
 import { paymentsService } from '../data/services/paymentsService';
 import { useAuth } from '../hooks/useAuth';
+import { useFunds } from '../hooks/useFunds';
 
 type Props = {
     product: IProduct;
@@ -54,20 +57,43 @@ export const Product: React.FC<Props> = (props) => {
 const BuyButton: React.FC<{ product: IProduct }> = (props) => {
     const queryClient = useQueryClient();
     const [quantity, setQuantity] = useState(1);
+    const { updateFunds } = useFunds();
+    const { enqueueSnackbar } = useSnackbar();
+    const { data: user } = useAuth();
     const buyMutation = useMutation({
         mutationFn: paymentsService.buy,
-        onSuccess: () => {
+        onSuccess: (data) => {
+            updateFunds(data.availableFunds);
             queryClient.invalidateQueries({ queryKey: ['products'] });
+            // TODO: show notification
+            enqueueSnackbar(
+                `Bought ${quantity}x ${props.product.name} for ${data.spent}.`,
+                {
+                    variant: 'success',
+                },
+            );
+            enqueueSnackbar(
+                `Your change: ${data.change.join(',')} and you are left with ${
+                    data.availableFunds
+                }.`,
+                {
+                    variant: 'info',
+                },
+            );
+        },
+        onError: (error: any) => {
+            const messages = getErrorMessages(error);
+            if (messages != null && messages.length > 0) {
+                enqueueSnackbar(messages[0], {
+                    variant: 'error',
+                });
+            }
         },
     });
 
-    useEffect(() => {
-        if (buyMutation.isSuccess) {
-            // TODO: show buy notification
-        } else if (buyMutation.isError) {
-            // TODO: show failed buy notification
-        }
-    });
+    if (user?.roles.includes('Admin')) {
+        return <div />;
+    }
 
     if (props.product.amountAvailable <= 0) {
         return (

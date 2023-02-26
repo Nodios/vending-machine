@@ -7,10 +7,7 @@ export const Button: React.FC<Props> = (props) => {
     return (
         <button
             {...props}
-            className={clsx(
-                'p-2 rounded-md bg-blue-500 text-white',
-                props.className,
-            )}
+            className={clsx('p-2 rounded-md bg-blue-500', props.className)}
         />
     );
 };

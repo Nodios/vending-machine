@@ -32,6 +32,13 @@ namespace User.UpdateUserRole
 
         public override async Task HandleAsync(Request r, CancellationToken c)
         {
+            if (r.UserId == r.RequestUserId)
+            {
+                AddError("Can not change role to yourself.");
+                await SendErrorsAsync();
+                return;
+            }
+
             var user = await _userManager.FindByIdAsync(r.UserId);
 
             if (user == null)

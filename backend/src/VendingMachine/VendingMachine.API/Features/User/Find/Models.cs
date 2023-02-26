@@ -29,6 +29,7 @@ namespace User.Find
 
         public string Email { get; set; }
         public string Id { get; set; }
+        public IEnumerable<string> Roles { get; set; }
         public string Username { get; set; }
 
         #endregion Properties
